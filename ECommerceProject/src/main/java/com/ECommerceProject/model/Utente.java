@@ -11,7 +11,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 
 @Entity
-public class Utenti
+public class Utente
 {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,9 +21,9 @@ public class Utenti
 	private Long pIva;
 	private String email;
 	private String password;
-	@OneToMany
-	@JsonManagedReference("utenti-ordini")
-	private List<Ordine> ordini; 
+	@OneToMany(mappedBy = "utente")
+	@JsonManagedReference("utente-ordini")
+	private List<Ordine> ordini;
 	
 	
 	public Long getId()
@@ -73,6 +73,14 @@ public class Utenti
 	public void setPassword(String password)
 	{
 		this.password = password;
+	}
+	public List<Ordine> getOrdini()
+	{
+		return ordini;
+	}
+	public void setOrdini(List<Ordine> ordini)
+	{
+		this.ordini = ordini;
 	}
 	
 	
