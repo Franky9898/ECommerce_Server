@@ -2,15 +2,18 @@ package com.ECommerceProject.model;
 
 import java.sql.Date;
 import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 
 @Entity
 public class Ordine
@@ -19,11 +22,18 @@ public class Ordine
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	private Date date;
+	
 	@ManyToOne
 	@JoinColumn(name = "utenteId")
 	@JsonBackReference("utente-ordini")
 	private Utente utente;
-	@OneToMany(mappedBy = "ordine")
+	
+	@ManyToMany(mappedBy = "ordine")
+	@JoinTable(
+	        name = "ordine_prodotto",
+	        joinColumns = @JoinColumn(name = "ordine_id"),
+	        inverseJoinColumns = @JoinColumn(name = "prodotto_id")
+	    )
 	@JsonManagedReference("ordine-prodotti")
 	private List<Prodotto> prodotti;
 	

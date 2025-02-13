@@ -1,15 +1,24 @@
 package com.ECommerceProject.model;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.MapsId;
+import jakarta.persistence.OneToOne;
+
+@Entity
 public class Rating
 {
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 	private double rate; 
 	private int count;
 	
-	public Rating(double rate, int count) 
-	{
-		this.rate = rate;
-		this.count = count;
-	}
+	@OneToOne
+	@MapsId
+	private Prodotto prodotto;
 	
 	public double getRate()
 	{

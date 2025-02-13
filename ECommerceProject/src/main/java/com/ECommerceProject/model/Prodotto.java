@@ -4,12 +4,14 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.PrimaryKeyJoinColumn;
 
 @Entity
 public class Prodotto
@@ -22,11 +24,14 @@ public class Prodotto
 	private String description;
 	private String category;
 	private String image;
+	
+	@OneToOne(cascade = CascadeType.ALL)
+	@PrimaryKeyJoinColumn
 	private Rating rating;
-	@ManyToOne
-	@JoinColumn(name = "ordineId")
-	@JsonBackReference("ordine-prodotti")
-	private List<Ordine> ordine;
+	
+	@ManyToMany(mappedBy = "prodotti")
+    @JsonBackReference("ordine-prodotti")
+    private List<Ordine> ordini;
 	
 	public Long getId()
 	{
@@ -84,13 +89,13 @@ public class Prodotto
 	{
 		this.rating = rating;
 	}
-	public List<Ordine> getOrdine()
+	public List<Ordine> getOrdini()
 	{
-		return ordine;
+		return ordini;
 	}
-	public void setOrdine(List<Ordine> ordine)
+	public void setOrdini(List<Ordine> ordini)
 	{
-		this.ordine = ordine;
+		this.ordini = ordini;
 	}
 	
 	
