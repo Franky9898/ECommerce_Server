@@ -13,7 +13,7 @@ import com.ECommerceProject.model.Utente;
 import com.ECommerceProject.repository.UtenteRepository;
 
 @RestController
-@RequestMapping("/ordine")
+@RequestMapping("/utenti")
 public class UtenteController
 {
 	@Autowired

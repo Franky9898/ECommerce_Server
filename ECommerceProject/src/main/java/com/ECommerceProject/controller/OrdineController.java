@@ -18,7 +18,7 @@ public class OrdineController
 {
 	@Autowired
 	private OrdineRepository ordineRepo;
-	
+
 	@GetMapping
 	public List<Ordine> ottieniTuttiOrdini()
 	{
