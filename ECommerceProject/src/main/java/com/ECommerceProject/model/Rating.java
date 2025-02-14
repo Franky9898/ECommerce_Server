@@ -14,19 +14,17 @@ public class Rating
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-	private double rate; 
-	private int count;
+	private Double rate; 
+	private Integer count;
 	
-	@OneToOne
-	@MapsId
-	@JoinColumn(name = "id")
+	@OneToOne(mappedBy="rating")
 	private Prodotto prodotto;
 	
 	public double getRate()
 	{
 		return rate;
 	}
-	public void setRate(double rate)
+	public void setRate(Double rate)
 	{
 		this.rate = rate;
 	}
@@ -34,7 +32,7 @@ public class Rating
 	{
 		return count;
 	}
-	public void setCount(int count)
+	public void setCount(Integer count)
 	{
 		this.count = count;
 	}

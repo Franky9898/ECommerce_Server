@@ -22,6 +22,7 @@ public class Ordine
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	private Date date;
+	//private Double totale;
 	
 	@ManyToOne
 	@JoinColumn(name = "utenteId")

@@ -5,13 +5,14 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToOne;
-import jakarta.persistence.PrimaryKeyJoinColumn;
 
 @Entity
 public class Prodotto
@@ -20,13 +21,14 @@ public class Prodotto
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	private String title;
-	private double price;
+	private Double price;
+	@Column(length = 1000)
 	private String description;
 	private String category;
 	private String image;
 	
 	@OneToOne(cascade = CascadeType.ALL)
-	@PrimaryKeyJoinColumn
+	@JoinColumn(name = "rating_id", referencedColumnName = "id")
 	private Rating rating;
 	
 	@ManyToMany(mappedBy = "prodotti")
@@ -49,11 +51,11 @@ public class Prodotto
 	{
 		this.title = title;
 	}
-	public double getPrice()
+	public Double getPrice()
 	{
 		return price;
 	}
-	public void setPrice(double price)
+	public void setPrice(Double price)
 	{
 		this.price = price;
 	}
