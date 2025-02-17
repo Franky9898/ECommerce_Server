@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -23,16 +24,22 @@ public class Ordine
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
+	
+	@Past(message = "La data non può essere nel futuro")
+	@NotNull
 	private Date date;
+	
+	@Min(value = 0, message = "Il prezzo deve essere non nullo")
+	@NotNull
 	private Double totale;
 
 	@ManyToOne
-	@JoinColumn(name = "utenteId")
+	@JoinColumn(name = "utenteId", nullable = false)
 	@JsonBackReference("utente-ordini")
 	private Utente utente;
 
 	@ManyToMany
-	@JoinTable(name = "ordine_prodotto", joinColumns = @JoinColumn(name = "ordine_id"), inverseJoinColumns = @JoinColumn(name = "prodotto_id"))
+	@JoinTable(name = "ordine_prodotto", joinColumns = @JoinColumn(name = "ordine_id", nullable = false), inverseJoinColumns = @JoinColumn(name = "prodotto_id", nullable = false))
 	private List<Prodotto> prodotti;
 
 	public Long getId()

@@ -1,7 +1,11 @@
 package com.ECommerceProject.model;
 
 import java.util.List;
+
+
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -14,11 +18,26 @@ public class Utente
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
+	
+	@NotBlank(message = "Nome obbligatorio")
 	private String nome;
+	
+	@NotBlank(message = "Cognome obbligatorio")
 	private String cognome;
+	
+	@Column(unique = true)
 	private Long pIva;
+	
+	@Email(message = "Email deve essere valida")
+	@Column(unique = true)
 	private String email;
+	
+	@Length(min = 8, message = "La password deve essere almeno di 8 caratteri")
+	@NotBlank(message = "Password obbligatoria")
 	private String password;
+	
+	private Role role;
+	
 	@OneToMany(mappedBy = "utente")
 	@JsonManagedReference("utente-ordini")
 	private List<Ordine> ordini;
