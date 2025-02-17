@@ -13,15 +13,13 @@ public class AuthUser
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-	// Username dell'utente autenticato
-	private String username;
-
+	private String email;
 	private String token;
 
-	public AuthUser(String username, String token)
+	public AuthUser(String email, String token)
 	{
-		this.username = username;
-		this.token = generateToken(username);
+		this.email = email;
+		this.token = generateToken(email);
 	}
 
 	public static String generateToken(String email)
@@ -29,35 +27,26 @@ public class AuthUser
 		// Genera un token univoco usando UUID
 		String token = UUID.randomUUID().toString();
 		System.out.println("Token generato: " + token); // stringa di debug in console
-		// Associa il token all'utente autenticato nella mappa
 		return token;
 	}
 
-	/**
-	 * Costruttore che inizializza l'oggetto AuthUser con username e ruolo.
-	 *
-	 * @param username Username dell'utente
-	 * @param role     Ruolo dell'utente
-	 */
-	public AuthUser(String username)
+	public AuthUser(String email)
 	{
-		this.username = username;
+		this.email = email;
 	}
 
 	public AuthUser()
 	{
 	}
 
-	// Getter e Setter per username e ruolo
-
-	public String getUsername()
+	public String getEmail()
 	{
-		return username;
+		return email;
 	}
 
-	public void setUsername(String username)
+	public void setEmail(String email)
 	{
-		this.username = username;
+		this.email = email;
 	}
 
 	public Long getId()

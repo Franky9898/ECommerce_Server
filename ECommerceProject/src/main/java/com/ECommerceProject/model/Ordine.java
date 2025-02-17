@@ -7,7 +7,6 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -16,6 +15,9 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Past;
 
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 @Entity
@@ -41,7 +43,11 @@ public class Ordine
 	@ManyToMany
 	@JoinTable(name = "ordine_prodotto", joinColumns = @JoinColumn(name = "ordine_id", nullable = false), inverseJoinColumns = @JoinColumn(name = "prodotto_id", nullable = false))
 	private List<Prodotto> prodotti;
-
+	
+	public Ordine()
+	{
+	}
+	
 	public Long getId()
 	{
 		return id;

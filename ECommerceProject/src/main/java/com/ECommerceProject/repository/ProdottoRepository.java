@@ -8,5 +8,5 @@ import com.ECommerceProject.model.Prodotto;
 @Repository
 public interface ProdottoRepository extends JpaRepository<Prodotto, Long>
 {
-
+	
 }

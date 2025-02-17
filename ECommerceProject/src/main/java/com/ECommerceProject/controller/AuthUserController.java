@@ -19,116 +19,103 @@ import com.ECommerceProject.model.Utente;
 import com.ECommerceProject.repository.AuthUserRepository;
 import com.ECommerceProject.repository.UtenteRepository;
 
-import jakarta.servlet.http.HttpServletResponse;
-
 @RestController
 @RequestMapping("/api")
 @CrossOrigin(origins = {}) // Disabilita richieste CORS da origini esterne
 public class AuthUserController
 {
-
-	
 	@Autowired
 	private AuthUserRepository authRepo;
 
 	@Autowired
 	private UtenteRepository userRepository;
-
+	
 	/**
-	 * Endpoint per effettuare il login. Riceve email e password in formato JSON e restituisce il token se le credenziali sono valide.
-	 *
-	 * @param body     mappa contenente "email" e "password"
-	 * @param response oggetto HttpServletResponse per impostare lo status
-	 * @return mappa con un messaggio di conferma, il ruolo dell'utente e il token
+	 * 
+	 * @param body
+	 * @return result: messaggio di errore o di successo
+	 * Metodo che gestisce il login di uno user già esistente tramite email e password
 	 */
+	
 	@PostMapping("/login")
-	public ResponseEntity<Map<String, Object>> login(@RequestBody Map<String, String> body, HttpServletResponse response)
+	public ResponseEntity<Map<String, String>> login(@RequestBody Map<String, String> body) // il corpo della HTTP da formato JSON si trasforma in Map 
 	{
-		Map<String, Object> result = new HashMap<>();
-		// Estrae email e password dalla richiesta JSON
-		String email = body.get("email");
-		String password = body.get("password");
+		Map<String, String> result = new HashMap<String, String>();
+		String email = body.get("email"); // Si ottiene il valore dell'email
+		String password = body.get("password"); // E della password
 
-		// Verifica che email e password siano stati forniti
 		if (email == null || password == null)
 		{
-			result.put("error", "Credenziali non valide");
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(result);
+			result.put("errore", "Credenziali non valide");
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(result); // Imposta il body della richiesta come result
 		}
 
-		// Cerca l'utente nel database tramite email
-		Optional<Utente> optionalUser = userRepository.findByEmail(email);
-		// Se l'utente non esiste o la password non corrisponde, ritorna errore 401
+		Optional<Utente> optionalUser = userRepository.findByEmail(email); // Cerca se esiste uno user con determinata email
 		if (!optionalUser.isPresent() || !optionalUser.get().getPassword().equals(password))
 		{
-			result.put("error", "Credenziali non valide");
+			result.put("errore", "Credenziali non valide");
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(result);
 		}
+		Utente user = optionalUser.get(); // Se esiste ottiene lo user
 
-		// Se le credenziali sono corrette, recupera l'utente e il suo ruolo
-		Utente user = optionalUser.get();
-
-		// Genera un token associato all'utente
 		String token = AuthUser.generateToken(email);
 		Optional<AuthUser> authUser = authRepo.findByEmail(user.getEmail());
 
-		// Salva il nuovo authUser:
-		if (authUser.isPresent())
+		if (authUser.isPresent()) // Se non è la prima volta che lo user fa l'accesso si cambia il token
 		{
 			authUser.get().setToken(token);
 			authRepo.save(authUser.get());
-		} else
+		} else // Altrimenti si crea un nuovo user autenticato
 		{
 			AuthUser nuovoUser = new AuthUser(user.getEmail(), token);
 			authRepo.save(nuovoUser);
 		}
 
-		result.put("message", "Login effettuato con successo");
+		result.put("messaggio", "Login effettuato con successo");
 		result.put("token", token);
 		return ResponseEntity.ok(result);
 	}
-
+	
 	/**
-	 * Endpoint per effettuare il logout. Riceve il token nell'header "Authorization" e lo rimuove dal TokenService, invalidando così il token lato client.
-	 *
-	 * @param authHeader header contenente il token (formato "Bearer <token>")
-	 * @return mappa con un messaggio di conferma del logout
+	 * 
+	 * @param authHeader valore dell'header HTTP
+	 * @return result: messaggio di errore o di successo
+	 * Metodo che permette il logout di uno user
 	 */
 	@PostMapping("/logout")
-	public ResponseEntity<Map<String, Object>> logout(@RequestHeader("Authorization") String authHeader)
+	public ResponseEntity<Map<String, String>> logout(@RequestHeader("Authorization") String authHeader) // Prende il valore dell’header HTTP con nome "Authorization"
 	{
-		Map<String, Object> result = new HashMap<>();
+		Map<String, String> result = new HashMap<String, String>();
 		if (authHeader == null || authHeader.isEmpty())
 		{
-			result.put("Errore", "Nessun token fornito");
+			result.put("errore", "Nessun token fornito");
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(result);
 		}
 
 		String token;
-		// Se il token è inviato come "Bearer <token>", estrae la parte dopo "Bearer " e quindi il token
-		if (authHeader != null && authHeader.startsWith("Bearer "))
+		if (authHeader != null && authHeader.startsWith("Bearer ")) // Se il token è inviato come "Bearer <token>", estrae la parte dopo "Bearer " e quindi il token
 		{
 			token = authHeader.substring(7);
 		} else
 		{
-			token = authHeader;
+			token = authHeader; // Prende il token anche quando non c'è Bearer
 		}
 		if (token == null || token.isEmpty())
 		{
-			result.put("Errore", "Token non valido");
+			result.put("errore", "Token non valido");
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(result);
 		}
-		Optional<AuthUser> authUserOpt = authRepo.findByToken(token);
-		if (!authUserOpt.isPresent())
+		Optional<AuthUser> authUserOpt = authRepo.findByToken(token); // Trova lo user tramite token
+		if (!authUserOpt.isPresent()) // Se per qualche motivo il token non corrisponde manda un errore
 		{
-			result.put("Errore", "Errore nel logout, token non valido");
+			result.put("errore", "Errore nel logout, token non valido");
 	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(result);
 		}
 		AuthUser authUser = authUserOpt.get();
-	    authUser.setToken(null);
+	    authUser.setToken(null); // Rimuove il token (settandolo a null)
 	    authRepo.save(authUser);
 
-	    result.put("Message", "Logout effettuato con successo");
+	    result.put("messaggio", "Logout effettuato con successo");
 	    return ResponseEntity.ok(result);
 	}
 }

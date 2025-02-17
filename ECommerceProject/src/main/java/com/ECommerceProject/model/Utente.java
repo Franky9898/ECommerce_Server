@@ -2,6 +2,7 @@ package com.ECommerceProject.model;
 
 import java.util.List;
 
+import org.hibernate.validator.constraints.Length;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
@@ -11,6 +12,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 
 @Entity
 public class Utente
@@ -36,12 +39,22 @@ public class Utente
 	@NotBlank(message = "Password obbligatoria")
 	private String password;
 	
-	private Role role;
-	
 	@OneToMany(mappedBy = "utente")
 	@JsonManagedReference("utente-ordini")
 	private List<Ordine> ordini;
 	
+	public Utente() 
+	{
+	}
+	
+	public Utente(String nome, String cognome, Long pIva,String email, String password)
+	{
+		this.nome = nome;
+		this.cognome = cognome;
+		this.pIva = pIva;
+		this.email = email;
+		this.password = password;
+	}
 	
 	public Long getId()
 	{

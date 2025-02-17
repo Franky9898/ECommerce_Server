@@ -1,7 +1,9 @@
 package com.ECommerceProject.controller;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,40 +24,51 @@ public class ProdottoController
 	@Autowired
 	private ProdottoRepository prodRepo;
 
+	/**
+	 * 
+	 * @return Messaggio di successo o errore Metodo per salvare in locale i prodotti del fakeStoreApi
+	 */
 	@GetMapping("/fetchAndSaveFakeStoreAPI")
 	public ResponseEntity<String> fetchAndSaveProducts()
 	{
 		RestTemplate restTemplate = new RestTemplate();
 		final String apiUrl = "https://fakestoreapi.com/products";
-		ResponseEntity<Prodotto[]> response = restTemplate.getForEntity(apiUrl, Prodotto[].class);
-		Prodotto[] products = response.getBody();
-
-		if (products != null)
+		ResponseEntity<Prodotto[]> response = restTemplate.getForEntity(apiUrl, Prodotto[].class); // Esegue un get sull'URL e converte il JSON in formato prodotto
+		Prodotto[] products = response.getBody(); // Prende solamente il body della response
+		if (products != null) // Salva se non vuoto
 		{
 			prodRepo.saveAll(Arrays.asList(products));
 			return ResponseEntity.ok("Prodotti salvati con successo");
-		} else
-		{
-			return ResponseEntity.ok("Errore: prodotti non salvati");
 		}
+		return ResponseEntity.ok("Errore: prodotti non salvati"); // Errore altrimenti
 	}
 
+	/**
+	 * 
+	 * @return Lista di tutti i prodotti Metodo per ottenere la lista di tutti i prodotti (non utilizzabile normalmente)
+	 */
 	@GetMapping
-	public List<Prodotto> getAllProducts()
+	public ResponseEntity<List<Prodotto>> getAllProducts()
 	{
-		return prodRepo.findAll();
+		List<Prodotto> prodotti = prodRepo.findAll(); // Ottieni la lista di prodotti
+		return ResponseEntity.ok(prodotti);
 	}
 
+	/**
+	 * 
+	 * @param id per identificare prodotto
+	 * @return il prodotto con quel id se esiste, altrimenti errore not found
+	 */
 	@GetMapping("/{id}")
-	public ResponseEntity<Prodotto> getProductById(@PathVariable Long id)
+	public ResponseEntity<Object> getProductById(@PathVariable Long id)
 	{
-		Optional<Prodotto> product = prodRepo.findById(id);
-		if (product.isPresent())
+		Map<String, String> result = new HashMap<String, String>();
+		Optional<Prodotto> productOpt = prodRepo.findById(id);
+		if (productOpt.isPresent()) // Controllo se il prodotto è presente
 		{
-			return new ResponseEntity<Prodotto>(product.get(), HttpStatus.OK);
-		} else
-		{
-			return new ResponseEntity<Prodotto>(HttpStatus.NOT_FOUND);
+			return ResponseEntity.ok(productOpt.get());
 		}
+		result.put("errore", "Prodotto non trovato.");
+		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(result); // Response senza body
 	}
 }
