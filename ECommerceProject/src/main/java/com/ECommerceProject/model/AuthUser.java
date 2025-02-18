@@ -19,7 +19,7 @@ public class AuthUser
 	public AuthUser(String email, String token)
 	{
 		this.email = email;
-		this.token = generateToken(email);
+		this.token = token;
 	}
 
 	public static String generateToken(String email)

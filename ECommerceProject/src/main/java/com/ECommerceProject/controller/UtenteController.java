@@ -8,6 +8,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,6 +26,7 @@ import jakarta.validation.constraints.NotBlank;
 
 @RestController
 @RequestMapping("/utenti")
+@CrossOrigin(origins = {})
 public class UtenteController
 {
 	@Autowired
@@ -50,7 +52,7 @@ public class UtenteController
 	public ResponseEntity<Object> creaUtente(@Valid @RequestBody Utente utente)
 	{
 		Map<String, String> result = new HashMap<String, String>();
-		if (utenteRepo.findByEmail(utente.getEmail()) != null) // Controlla se l'email inserita nella richiesta di post è già nel DB
+		if (utenteRepo.findByEmail(utente.getEmail()).isPresent()) // Controlla se l'email inserita nella richiesta di post è già nel DB
 		{
 			result.put("errore", "L'email è già presente nel database.");
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result);
