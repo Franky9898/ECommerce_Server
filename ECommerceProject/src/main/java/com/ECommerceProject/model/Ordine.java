@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIdentityReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 import jakarta.persistence.Entity;
@@ -42,6 +43,7 @@ public class Ordine
 
 	@ManyToMany
 	@JoinTable(name = "ordine_prodotto", joinColumns = @JoinColumn(name = "ordine_id", nullable = false), inverseJoinColumns = @JoinColumn(name = "prodotto_id", nullable = false))
+	@JsonIdentityReference(alwaysAsId = false)
 	private List<Prodotto> prodotti;
 	
 	public Ordine()
