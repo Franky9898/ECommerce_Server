@@ -15,14 +15,16 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ECommerceProject.model.AuthUser;
 import com.ECommerceProject.model.Utente;
+import com.ECommerceProject.repository.AuthUserRepository;
 import com.ECommerceProject.repository.UtenteRepository;
 
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
 
 @RestController
 @RequestMapping("/utenti")
@@ -31,6 +33,9 @@ public class UtenteController
 {
 	@Autowired
 	private UtenteRepository utenteRepo;
+
+	@Autowired
+	AuthUserRepository authRepo;
 
 	/**
 	 * 
@@ -64,8 +69,7 @@ public class UtenteController
 	/**
 	 * 
 	 * @param id dell'utente da cancellare
-	 * @return messaggi di successo o errore se non esiste
-	 * Metodo per cancellare l'utente dal database
+	 * @return messaggi di successo o errore se non esiste Metodo per cancellare l'utente dal database
 	 */
 	@DeleteMapping("/{id}")
 	public ResponseEntity<Map<String, String>> cancellaUtente(@PathVariable Long id)
@@ -80,67 +84,105 @@ public class UtenteController
 		result.put("errore", "L'utente non esiste.");
 		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(result);
 	}
-	
-	/**
-	 * 
-	 * @param id dell'utente
-	 * @param nome nuovo dell'utente
-	 * @return dettagli utente e status richiesta
-	 * Metodo per modificare il nome dell'utente
-	 */
-	@PutMapping("/{id}/modNome")
-	public ResponseEntity<Object> modificaNomeUtente(@PathVariable Long id, @NotBlank @RequestBody String nome)
+
+	@PutMapping("/modificaProfilo")
+	public ResponseEntity<Map<String, String>> modificaProfilo(@RequestHeader("Authorization") String authHeader, @RequestBody Map<String, Object> body)
 	{
-		Optional<Utente> utenteDaModificare = utenteRepo.findById(id);
-		if (utenteDaModificare.isPresent())
+		Map<String, String> result = new HashMap<String, String>();
+		if (authHeader == null || authHeader.isEmpty())
 		{
-			Utente utente = utenteDaModificare.get();
-			utente.setNome(nome);
-			utenteRepo.save(utente);
-			return ResponseEntity.status(HttpStatus.OK).body(utente);
+			result.put("errore", "Nessun token fornito");
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(result);
 		}
-		return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Utente non trovato");
+
+		String token;
+		if (authHeader != null && authHeader.startsWith("Bearer ")) // Se il token è inviato come "Bearer <token>", estrae la parte dopo "Bearer " e quindi il token
+		{
+			token = authHeader.substring(7);
+		} else
+		{
+			token = authHeader; // Prende il token anche quando non c'è Bearer
+		}
+		if (token == null || token.isEmpty())
+		{
+			result.put("errore", "Token non valido");
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(result);
+		}
+		Optional<AuthUser> authUserOpt = authRepo.findByToken(token); // Trova lo user tramite token
+		if (!authUserOpt.isPresent()) // Se per qualche motivo il token non corrisponde manda un errore
+		{
+			result.put("errore", "Errore token non valido");
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(result);
+		}
+		AuthUser authUser = authUserOpt.get();
+		String email = authUser.getEmail();
+		Optional<Utente> utenteOpt = utenteRepo.findByEmail(email);
+		if (!utenteOpt.isPresent())
+		{
+			result.put("errore", "Non esiste utente con tale email.");
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(result);
+		}
+		Utente utente = utenteOpt.get();
+		String nome = (String) body.get("nome");
+		String cognome = (String) body.get("cognome");
+		Long pIva = null;
+		if (body.containsKey("pIva") && body.get("pIva") != null)
+		{
+			try
+			{
+				pIva = Long.valueOf(body.get("pIva").toString());
+			} catch (NumberFormatException e)
+			{
+				result.put("errore", "Formato partita IVA non valido");
+				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result);
+			}
+		}
+		utente.setNome(nome);
+		utente.setCognome(cognome);
+		utente.setpIva(pIva);
+		utenteRepo.save(utente);
+		result.put("messaggio", "Modifiche avvenute con successo");
+		return ResponseEntity.ok(result);
 	}
 
-	/**
-	 * 
-	 * @param id dell'utente
-	 * @param cognome nuovo dell'utente
-	 * @return dettagli utente e status richiesta
-	 * Metodo per modificare il cognome dell'utente
-	 */
-	@PutMapping("/{id}/modCognome")
-	public ResponseEntity<Object> modificaCognomeUtente(@PathVariable Long id, @NotBlank @RequestBody String cognome)
+	@GetMapping("/dettagli")
+	public ResponseEntity<Object> login(@RequestHeader("Authorization") String authHeader)
 	{
-		Optional<Utente> utenteDaModificare = utenteRepo.findById(id);
-		if (utenteDaModificare.isPresent())
+		Map<String, String> result = new HashMap<String, String>();
+		if (authHeader == null || authHeader.isEmpty())
 		{
-			Utente utente = utenteDaModificare.get();
-			utente.setCognome(cognome);
-			utenteRepo.save(utente);
-			return ResponseEntity.status(HttpStatus.OK).body(utente);
+			result.put("errore", "Nessun token fornito");
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(result);
 		}
-		return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Utente non trovato");
-	}
-	
-	/**
-	 * 
-	 * @param id dell'utente
-	 * @param pIva nuova dell'utente
-	 * @return dettagli utente e status richiesta
-	 * Metodo per modificare la partita IVA dell'utente
-	 */
-	@PutMapping("/{id}/modPIva")
-	public ResponseEntity<Object> modificaPIvaUtente(@PathVariable Long id, @NotBlank @RequestBody Long pIva)
-	{
-		Optional<Utente> utenteDaModificare = utenteRepo.findById(id);
-		if (utenteDaModificare.isPresent())
+
+		String token;
+		if (authHeader != null && authHeader.startsWith("Bearer ")) // Se il token è inviato come "Bearer <token>", estrae la parte dopo "Bearer " e quindi il token
 		{
-			Utente utente = utenteDaModificare.get();
-			utente.setpIva(pIva);
-			utenteRepo.save(utente);
-			return ResponseEntity.status(HttpStatus.OK).body(utente);
+			token = authHeader.substring(7);
+		} else
+		{
+			token = authHeader; // Prende il token anche quando non c'è Bearer
 		}
-		return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Utente non trovato");
+		if (token == null || token.isEmpty())
+		{
+			result.put("errore", "Token non valido");
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(result);
+		}
+		Optional<AuthUser> authUserOpt = authRepo.findByToken(token); // Trova lo user tramite token
+		if (!authUserOpt.isPresent()) // Se per qualche motivo il token non corrisponde manda un errore
+		{
+			result.put("errore", "Errore token non valido");
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(result);
+		}
+		AuthUser authUser = authUserOpt.get();
+		String email = authUser.getEmail();
+		Optional<Utente> utenteOpt = utenteRepo.findByEmail(email);
+		if (!utenteOpt.isPresent())
+		{
+			result.put("errore", "Non esiste utente con tale email.");
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(result);
+		}
+		Utente utente = utenteOpt.get();
+		return ResponseEntity.ok(utente);
 	}
 }
