@@ -50,6 +50,13 @@ public class Ordine
 	{
 	}
 	
+	public Ordine(Date date, Double totale, Utente utente, List<Prodotto> prodotti) 
+	{
+		this.date=date;
+		this.totale=totale;
+		this.utente=utente;
+		this.prodotti=prodotti;
+	}
 	public Long getId()
 	{
 		return id;
